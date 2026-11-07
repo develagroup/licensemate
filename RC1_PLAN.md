@@ -1,6 +1,6 @@
 # LicensePulse RC1 phase plan
 
-**Status:** PostgreSQL selected for RC1. Phases 1–4 local implementation and disposable-service smoke checks pass. Phase 5 local security, lifecycle, build, and backup/restore checks pass. RC1 is **not ready for release**: staging acceptance, owner policy decisions, hosted CI/history scan, and off-host recovery remain open. No production changes have been made.  
+**Status:** PostgreSQL selected for RC1. Phases 1–4 local implementation and disposable-service smoke checks pass. Phase 5 local security, lifecycle, build, and backup/restore checks pass. Latest candidate commit `51666ff519c5bfdb4e949da93532d6cbc4f29788` passed [hosted CI run 42416054198](https://github.com/develagroup/licensemate/actions/runs/42416054198), including artifact upload and full-history secret scanning. The downloaded archive checksum verified. [PR #1](https://github.com/develagroup/licensemate/pull/1) is ready for owner review. RC1 is **not ready for release**: independent review, staging acceptance, owner privacy/support decisions, and off-host recovery remain open. No production changes have been made.
 **Target:** A small production release that can issue, monitor, validate, and revoke real online licenses safely.  
 **Current baseline:** Admin OTP login and hosted UI work. The local server uses PostgreSQL via `pg`; MySQL/MariaDB is no longer an application dependency. No production database or service has been changed. See [LICENSE_LIFECYCLE_AUDIT.md](LICENSE_LIFECYCLE_AUDIT.md) and [DATABASE_OPERATIONS.md](DATABASE_OPERATIONS.md).
 
@@ -36,9 +36,10 @@ Before any migration or production reset, export and reconcile license/order dat
 - The application is deployed at `licensemate.develadigital.com` from `/var/www/node/licensepulse` on `74.208.225.17`.
 - The running server uses Express and currently exposes OTP authentication endpoints only; license lifecycle operations are not yet backed by server APIs.
 - MariaDB 10.5 is running on the host; PostgreSQL was not installed/running at Phase 0 discovery. The user has now selected PostgreSQL for RC1. No LicensePulse database or schema was created on the host. Before provisioning PostgreSQL, confirm a supported package/service version, host capacity, service isolation, backup destination, and restore approach.
-- The app's customer/license data currently lives in browser `localStorage`. A private local backup was created at `/Users/juanvela/Downloads/licensepulse-phase0-backup-2026-11-07.json` with permissions `600`. It contains 13 storage groups. Seven stored license records were compared with bundled sample keys; all seven match and no additional license records were found. Preserve the export until the four changed trial policies and prototype webhook settings are reviewed. The backup contains sensitive customer and license data and must not be committed or shared.
-- Detailed, sanitized comparison of all 13 storage groups is recorded in [PHASE0_DATA_RECONCILIATION.md](PHASE0_DATA_RECONCILIATION.md). License, order, product, and audit samples match bundled fixtures; four trial policies differ from defaults and remain preserved for review. Decision: import no browser records into the RC1 license database.
+- The app's customer/license data currently lives in browser `localStorage`. A private local backup was created at `/Users/juanvela/Downloads/licensepulse-phase0-backup-2026-11-07.json` with permissions `600`. It contains 13 storage groups. Seven stored license records were compared with bundled sample keys; all seven match and no additional license records were found. The four trial-policy customizations have now been reviewed, excluded from RC1, and retained in the protected export. The backup contains sensitive customer/license data and must not be committed or shared.
+- Detailed, sanitized comparison of all 13 storage groups is recorded in [PHASE0_DATA_RECONCILIATION.md](PHASE0_DATA_RECONCILIATION.md). License, order, product, and audit samples match bundled fixtures; four trial policy rows differ from defaults and remain preserved only in the local protected export. Decision: import no browser records into the RC1 license database.
 - The administrator OTP flow uses the existing local Postfix SMTP setup. Customer license key email delivery is still simulated in the React app; sender authentication and delivery behavior for that flow have not been verified.
+- Read-only host inspection on 2026-11-07 found only the production `licensepulse.service`, no PostgreSQL service or separate staging directory, MariaDB 10.5 for other applications, and 1.3 GB free on `/`. GitHub has no configured deployment environments. Do not deploy or install PostgreSQL on this production host as a substitute for staging.
 - No production data, schema, credentials, or services were changed during Phase 0.
 
 ### Working decisions for Phases 1–2
@@ -120,7 +121,7 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 
 - Run the lifecycle flow in staging and verify persistence across an application/database restart.
 - Verify duplicate key collision retry (savepoint path), pagination/filter edges, and audit durability under the staging runtime role.
-- Apply the reconciliation decision: import no licenses, orders, or demo audit events. Preserve the export until the four changed trial-policy rows and prototype webhook settings are reviewed.
+- Apply the reconciliation decision: import no licenses, orders, demo audit events, or trial policy configuration. Trial policy and prototype webhook settings were reviewed and remain outside RC1; preserve the protected export locally.
 - Repeat least-privilege and encrypted backup/restore checks in remote staging and select an off-host production backup destination before production.
 - Confirm Phase 2 UI behavior using the real database. Product presets remain UI-driven; persistent catalog administration is out of this phase.
 - Decide how support will handle a lost customer key. The current secure model stores only a hash and reveals the full key once; resend requires key reissue/replacement or a separately reviewed encrypted recovery design.
@@ -188,6 +189,7 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 - Added an AES-256-GCM encrypted outbox payload protected by `EMAIL_OUTBOX_ENCRYPTION_KEY`. Outbox list and audit responses never expose ciphertext or full keys. Failed sends are retryable up to ten attempts; resend of an accepted message creates a new delivery record.
 - Added admin delivery history/retry/resend UI, server-backed rolling 24-hour license, device, validation, and email metrics, plus durable validation and email audit events. Email “accepted” means the configured SMTP relay accepted the message; inbox delivery and bounces are not known.
 - A disposable local PostgreSQL 17 + fake SMTP rehearsal passed: issue, intentional SMTP rejection, ciphertext-at-rest verification, retry acceptance, resend, client validation/rejection, delivery listing, metrics, and audit filtering. No real SMTP provider, remote staging, or production service was contacted.
+- Read-only DNS precheck on 2026-11-07 found an SPF record authorizing `74.208.225.17` and an MX record for `mail.develadigital.com`; no `_dmarc.develadigital.com` TXT record was returned. DKIM selector/signature, inbox placement, and bounce handling remain unverified.
 - `npm run lint` and `npm run build` are being rerun for this Phase 4 wrap-up.
 
 ### Remaining delivery and monitoring gates
@@ -225,14 +227,14 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 - Added CI checks for frozen Bun dependencies, the Bun advisory audit, TypeScript, server security smoke tests, production build, and Gitleaks source/history scanning.
 - Removed out-of-scope customer, billing, and offline demo destinations from the legacy Navbar. Audit history now labels IP/geolocation as not collected and no longer presents fabricated zero-millisecond request latency. Dashboard validation charts use real rolling 24-hour server aggregates.
 - Rechecked locally on 2026-11-07: `npm run lint`, production build, and all seven server security/session integration tests pass against a disposable PostgreSQL 17 instance and local fake SMTP sink. Integration coverage includes expiry discovery and rejection, renewal, and validation after renewal.
-- A full source-tree Gitleaks scan returned zero findings after replacing plausible-looking demo license keys and the empty encryption-key example. Git-history scanning and a hosted CI result are still unverified because this checkout has no `.git` directory.
-- Bun 1.4.4 `bun install --frozen-lockfile`, `bun audit` (317 packages, no vulnerabilities), `bun run lint`, and `bun run build` passed in an isolated Linux container. API tests passed locally under Node; the CI workflow still needs a run on the Git host.
+- A full source-tree Gitleaks scan returned zero findings after replacing plausible-looking demo license keys and the empty encryption-key example. Hosted full-history scans passed on the baseline and latest RC1 candidate commits.
+- Bun 1.4.4 `bun install --frozen-lockfile`, `bun audit` (317 packages, no vulnerabilities), `bun run lint`, and `bun run build` passed in an isolated Linux container. API tests passed locally under Node; candidate GitHub run 42415096677 passed the hosted security/API suite.
 - A local encrypted PostgreSQL custom-format backup/restore rehearsal passed. This is not an off-host backup or a staging restore.
 
 ### Remaining Phase 5 work
 
 - [x] Add local server coverage for origin policy, OTP throttling, security headers, admin authorization, client API routing, and database-backed session creation/revocation using disposable PostgreSQL and fake SMTP.
-- [x] Add CI dependency and secret scanning, typecheck, security smoke, and production build. The workflow still needs a run on the project's Git host; repository-history scanning cannot be demonstrated from this source-only checkout.
+- [x] Add CI dependency and secret scanning, typecheck, security smoke, production build, and versioned artifact packaging. GitHub runs 42415096677 and 42416054198 passed; the latter generated and uploaded the RC1 bundle.
 - [x] Hide remaining customer, billing, webhook, and offline demo destinations from both current navigation systems; preserve existing browser data for owner review.
 - [ ] Approve retention and recovery targets, choose a customer support contact, and define deletion/export handling. Proposed targets and data inventory are in [RC1_OPERATIONS_RUNBOOK.md](RC1_OPERATIONS_RUNBOOK.md).
 - [ ] Configure staging/production alerts and verify credential rotation, log redaction, and off-host backup/restore policy.
@@ -254,12 +256,12 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 | Gate | Status | Evidence / required action |
 | --- | --- | --- |
 | TypeScript, production build, API security and license lifecycle | **Passed locally** | `npm run lint`, `npm run build`, and `DATABASE_URL=… npm run test`; disposable PostgreSQL 17 and local fake SMTP. |
-| Dependency audit and frozen lockfile install | **Passed locally; hosted CI pending** | Bun 1.4.4 frozen install and `bun audit` reported no vulnerabilities; confirm on the Git host. |
-| Secret scan | **Full source scan passed; history pending** | No `.git` directory is present here; the full-history scan runs in CI after the branch is pushed. |
-| Real SMTP delivery and bounce handling | **Staging required** | Verify sender authorization, SPF/DKIM/DMARC, inbox placement, and bounce/DSN handling with the real sender. |
+| Dependency audit and frozen lockfile install | **Passed locally and in hosted CI** | Candidate workspace passed Bun 1.4.4 frozen install and `bun audit` (317 packages, no vulnerabilities); latest artifact workflow run 42415824229 passed. |
+| Secret scan | **Passed locally and in hosted CI** | Gitleaks v8.30.1 found no workspace/history findings; latest artifact workflow run 42415824229 passed full-history scanning. |
+| Real SMTP delivery and bounce handling | **Staging required** | SPF and MX DNS records exist; no DMARC TXT record was observed. Verify DKIM, establish DMARC, test inbox placement, and exercise bounce/DSN handling with the real sender. |
 | HTTPS/reverse proxy, rate limits, firewall and service permissions | **Staging required** | Verify the deployed host path and actual forwarded headers/source-IP behavior. |
 | Monitoring and alerts | **Staging required** | Configure and trigger alerts for DB/API health, 5xx/429 trends, failed email deliveries, and unusual activation attempts. |
-| Off-host backup and restore | **Staging/owner decision required** | Select a protected destination and schedule; perform restore using the host's deployment tooling and validate service recovery. |
+| Off-host backup and restore | **Staging/owner decision required** | Proposed daily encrypted backups, 30-day retention, RPO ≤24 hours, and RTO ≤4 hours are documented. Confirm targets, select a protected destination, configure it, and perform a staging restore using the target deployment tooling. |
 | Retention, recovery targets, privacy and support | **Owner decision required** | Approve retention/deletion/export policy and RPO/RTO; provide a monitored support contact and privacy notice. |
 
 ### Exit gate
@@ -269,6 +271,17 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 - No open critical/high security issues remain; remaining limitations are listed.
 
 ## Phase 6 — RC1 candidate and release decision
+
+### Candidate preparation status (2026-11-07)
+
+- GitHub Actions run [42416054198](https://github.com/develagroup/licensemate/actions/runs/42416054198) passed on candidate commit `51666ff519c5bfdb4e949da93532d6cbc4f29788`, including dependency audit, TypeScript, PostgreSQL-backed API/session tests, production build, versioned artifact packaging/upload, and Gitleaks source/history scan.
+- Candidate Bun 1.4.4 frozen install, `bun audit` (317 packages, zero vulnerabilities), TypeScript check, production build, and Gitleaks v8.30.1 passed locally and in hosted CI on the current PR head.
+- The package is versioned as `1.0.0-rc.1`; this identifies a candidate only. It is not a production release or proof of staging acceptance.
+- [RC1_RELEASE_NOTES.md](RC1_RELEASE_NOTES.md) captures scope, operator-visible capabilities, and limitations for candidate review.
+- The CI workflow assembles a versioned source-plus-built-assets archive and checksum for a 30-day CI artifact. Downloaded archive SHA-256 `c1535f17722583bfb908e3090f4f65f86d9cc5fbfcf167db0658eb4595ce8304` verified successfully; contents include source and `dist`, and exclude `.env`, `node_modules`, and `.git`. This packages but does not deploy the bundle.
+- Ready-for-review [PR #1](https://github.com/develagroup/licensemate/pull/1) contains the candidate diff. Independent owner review remains outstanding.
+- No staging deployment or production action has been performed. Review and passing CI on the latest artifact-packaging commit are required before staging promotion.
+- Phase 6 and the overall launch remain **blocked on external/owner gates**, enumerated in [RC1_RELEASE_NOTES.md](RC1_RELEASE_NOTES.md).
 
 ### Work
 

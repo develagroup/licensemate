@@ -2,6 +2,12 @@
 
 This runbook describes the deployment and recovery work required for staging and RC1. The local PostgreSQL backup/restore rehearsal passed, but this file does not mean a production backup destination or schedule is configured.
 
+## Environment discovery (2026-11-07)
+
+Read-only SSH inspection found the active production `licensepulse.service` at `/var/www/node/licensepulse`, MariaDB 10.5 used by other services, no PostgreSQL service, no `/var/www/node/licensepulse-staging` directory, and approximately 1.3 GB free on the root filesystem. GitHub has no configured deployment environments. The only known host is not a ready staging target; do not install PostgreSQL or deploy this candidate there without a separate capacity and isolation plan. The host also has no database backup timer or scheduled backup script.
+
+Public DNS inspection found an SPF TXT record authorizing `74.208.225.17` and an MX record pointing to `mail.develadigital.com`; no `_dmarc.develadigital.com` TXT record was returned. DKIM configuration, sender alignment, inbox placement, and bounce/DSN behavior remain to be verified.
+
 ## Deployment configuration
 
 Keep all values in the server's deployment secret store. Do not put them in Vite-prefixed variables, client bundles, command history, or logs.
@@ -39,7 +45,7 @@ Use the health endpoints from the host monitor. Do not put credentials or licens
 
 The local disposable PostgreSQL 17 encrypted custom-format backup/restore rehearsal passed. Staging and production still need an off-host encrypted destination and an actual scheduled restore rehearsal.
 
-Proposed initial service targets, **awaiting owner approval**:
+Proposed initial service targets, **awaiting owner approval and infrastructure setup**:
 
 - Recovery point objective: at most 24 hours of database changes.
 - Recovery time objective: restore issuance and validation service within 4 hours.
