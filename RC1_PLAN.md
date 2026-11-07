@@ -1,6 +1,6 @@
 # LicensePulse RC1 phase plan
 
-**Status:** PostgreSQL selected for RC1. Phases 1–4 local implementation and disposable-service smoke checks pass. Phase 5 local security, lifecycle, build, and backup/restore checks pass. Candidate commit `c2e88168c4765c6a681817404161d13c92d09a56` passed hosted CI run [42415096677](https://github.com/develagroup/licensemate/actions/runs/42415096677). A follow-up adds versioned artifact packaging and records the completed trial-policy reconciliation; its CI run is pending. RC1 is **not ready for release**: independent review, staging acceptance, owner privacy/support decisions, and off-host recovery remain open. No production changes have been made.
+**Status:** PostgreSQL selected for RC1. Phases 1–4 local implementation and disposable-service smoke checks pass. Phase 5 local security, lifecycle, build, and backup/restore checks pass. Candidate workflow run [42415824229](https://github.com/develagroup/licensemate/actions/runs/42415824229) passed on commit `a1bf9ad65e7677a8720c34921791d4b6126d4f02`, including artifact upload and full-history secret scanning; the downloaded archive checksum verified. [PR #1](https://github.com/develagroup/licensemate/pull/1) holds the reviewable candidate and its checks rerun on the latest head. RC1 is **not ready for release**: independent review, staging acceptance, owner privacy/support decisions, and off-host recovery remain open. No production changes have been made.
 **Target:** A small production release that can issue, monitor, validate, and revoke real online licenses safely.  
 **Current baseline:** Admin OTP login and hosted UI work. The local server uses PostgreSQL via `pg`; MySQL/MariaDB is no longer an application dependency. No production database or service has been changed. See [LICENSE_LIFECYCLE_AUDIT.md](LICENSE_LIFECYCLE_AUDIT.md) and [DATABASE_OPERATIONS.md](DATABASE_OPERATIONS.md).
 
@@ -256,8 +256,8 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 | Gate | Status | Evidence / required action |
 | --- | --- | --- |
 | TypeScript, production build, API security and license lifecycle | **Passed locally** | `npm run lint`, `npm run build`, and `DATABASE_URL=… npm run test`; disposable PostgreSQL 17 and local fake SMTP. |
-| Dependency audit and frozen lockfile install | **Passed locally and in hosted CI** | Candidate workspace passed Bun 1.4.4 frozen install and `bun audit` (317 packages, no vulnerabilities) in a disposable container; candidate GitHub Actions run 42415096677 passed. The follow-up artifact-packaging run is pending. |
-| Secret scan | **Passed locally and in hosted CI** | Gitleaks v8.30.1 scanned current workspace and available Git history with no findings; candidate GitHub Actions run 42415096677 passed full-history scanning. The follow-up run is pending. |
+| Dependency audit and frozen lockfile install | **Passed locally and in hosted CI** | Candidate workspace passed Bun 1.4.4 frozen install and `bun audit` (317 packages, no vulnerabilities); latest artifact workflow run 42415824229 passed. |
+| Secret scan | **Passed locally and in hosted CI** | Gitleaks v8.30.1 found no workspace/history findings; latest artifact workflow run 42415824229 passed full-history scanning. |
 | Real SMTP delivery and bounce handling | **Staging required** | SPF and MX DNS records exist; no DMARC TXT record was observed. Verify DKIM, establish DMARC, test inbox placement, and exercise bounce/DSN handling with the real sender. |
 | HTTPS/reverse proxy, rate limits, firewall and service permissions | **Staging required** | Verify the deployed host path and actual forwarded headers/source-IP behavior. |
 | Monitoring and alerts | **Staging required** | Configure and trigger alerts for DB/API health, 5xx/429 trends, failed email deliveries, and unusual activation attempts. |
@@ -274,11 +274,12 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 
 ### Candidate preparation status (2026-11-07)
 
-- GitHub Actions run [42415096677](https://github.com/develagroup/licensemate/actions/runs/42415096677) passed on candidate commit `c2e88168c4765c6a681817404161d13c92d09a56`, including frozen dependency installation, dependency audit, TypeScript, PostgreSQL-backed API/session tests, production build, and Gitleaks source/history scan. The artifact-packaging and updated reconciliation changes are in a follow-up commit and will receive a second run.
-- Candidate Bun 1.4.4 frozen install, `bun audit` (317 packages, zero vulnerabilities), TypeScript check, production build, and Gitleaks v8.30.1 passed locally; the first candidate revision also passed the hosted workflow. The current follow-up commit must pass again to verify CI artifact assembly and upload.
+- GitHub Actions run [42415824229](https://github.com/develagroup/licensemate/actions/runs/42415824229) passed on candidate commit `a1bf9ad65e7677a8720c34921791d4b6126d4f02`, including dependency audit, TypeScript, PostgreSQL-backed API/session tests, production build, versioned artifact packaging/upload, and Gitleaks source/history scan.
+- Candidate Bun 1.4.4 frozen install, `bun audit` (317 packages, zero vulnerabilities), TypeScript check, production build, and Gitleaks v8.30.1 passed locally; the current candidate revision passed the hosted workflow. CI reruns on each pull request head.
 - The package is versioned as `1.0.0-rc.1`; this identifies a candidate only. It is not a production release or proof of staging acceptance.
 - [RC1_RELEASE_NOTES.md](RC1_RELEASE_NOTES.md) captures scope, operator-visible capabilities, and limitations for candidate review.
-- The CI workflow now assembles a versioned source-plus-built-assets archive and checksum for a 30-day CI artifact. This packages but does not deploy the bundle.
+- The CI workflow assembles a versioned source-plus-built-assets archive and checksum for a 30-day CI artifact. Downloaded archive SHA-256 `c1535f17722583bfb908e3090f4f65f86d9cc5fbfcf167db0658eb4595ce8304` verified successfully; contents include source and `dist`, and exclude `.env`, `node_modules`, and `.git`. This packages but does not deploy the bundle.
+- Draft review request [PR #1](https://github.com/develagroup/licensemate/pull/1) contains the candidate diff. Independent owner review remains outstanding.
 - No staging deployment or production action has been performed. Review and passing CI on the latest artifact-packaging commit are required before staging promotion.
 - Phase 6 and the overall launch remain **blocked on external/owner gates**, enumerated in [RC1_RELEASE_NOTES.md](RC1_RELEASE_NOTES.md).
 

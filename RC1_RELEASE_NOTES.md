@@ -2,7 +2,7 @@
 
 **Candidate status:** Prepared for review; **not approved for production**  
 **Release date:** Not set  
-**Candidate source revision:** `c2e88168c4765c6a681817404161d13c92d09a56` passed GitHub Actions run [42415096677](https://github.com/develagroup/licensemate/actions/runs/42415096677). A follow-up commit adds candidate-bundle packaging and the completed browser-data review; that commit must pass CI before its artifact is used.
+**Candidate source revision:** Use the current head of [PR #1](https://github.com/develagroup/licensemate/pull/1) only when its hosted checks pass. CI builds and uploads the versioned source-plus-assets archive with a portable SHA-256 checksum; use the artifact attached to that exact reviewed commit, not an earlier run.
 
 ## Candidate scope
 
@@ -42,7 +42,7 @@ The local implementation and disposable-service checks do not demonstrate that t
 ## Candidate acceptance record
 
 - [ ] Independent source review and passing hosted CI run for the final candidate-bundle commit recorded.
-- [ ] Versioned production build generated from that commit; artifact digest recorded.
+- [x] Versioned candidate build generated, uploaded, and checksum verified for the current application candidate; regenerate on the final reviewed commit.
 - [ ] Exact artifact deployed to staging and full acceptance checklist passed.
 - [ ] Off-host encrypted backup and restore rehearsal passed; retention/RPO/RTO approved.
 - [ ] Sender, alerts, proxy, firewall, service permissions, and credential rotation verified.
