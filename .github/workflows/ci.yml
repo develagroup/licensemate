@@ -59,6 +59,26 @@ jobs:
       - name: Build production assets
         run: bun run build
 
+      - name: Package versioned candidate
+        shell: bash
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          bundle_root="$(mktemp -d "$RUNNER_TEMP/licensepulse-source.XXXXXX")"
+          git archive --format=tar HEAD | tar -xf - -C "$bundle_root"
+          cp -a dist "$bundle_root/dist"
+          release_root="$RUNNER_TEMP/licensepulse-release"
+          mkdir -p "$release_root"
+          tar --sort=name --owner=0 --group=0 --numeric-owner --mtime='UTC 1970-01-01' -cf - -C "$bundle_root" . | gzip -n > "$release_root/licensepulse-${version}.tar.gz"
+          sha256sum "$release_root/licensepulse-${version}.tar.gz" > "$release_root/licensepulse-${version}.tar.gz.sha256"
+
+      - name: Upload versioned candidate bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: licensepulse-1.0.0-rc.1
+          path: ${{ runner.temp }}/licensepulse-release/licensepulse-1.0.0-rc.1.tar.gz*
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Scan source and Git history for secrets
         run: >-
           docker run --rm

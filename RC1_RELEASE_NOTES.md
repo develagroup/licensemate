@@ -2,7 +2,7 @@
 
 **Candidate status:** Prepared for review; **not approved for production**  
 **Release date:** Not set  
-**Candidate source revision:** To be recorded after the release candidate commit is reviewed. The initial project baseline is `17739344a8d903fddf1c8ce5830f6f40a1e3902c`; it is not the RC1 candidate revision.
+**Candidate source revision:** `c2e88168c4765c6a681817404161d13c92d09a56` passed GitHub Actions run [42415096677](https://github.com/develagroup/licensemate/actions/runs/42415096677). A follow-up commit adds candidate-bundle packaging and the completed browser-data review; that commit must pass CI before its artifact is used.
 
 ## Candidate scope
 
@@ -31,17 +31,17 @@ Deploy only with the settings and separation described in [RC1_OPERATIONS_RUNBOO
 
 The local implementation and disposable-service checks do not demonstrate that the real deployment is safe. The candidate must remain a **no-go** until all applicable items below are closed and evidence is recorded in [RC1_PLAN.md](RC1_PLAN.md).
 
-- **Staging deployment and end-to-end acceptance:** deploy the exact reviewed candidate artifact to isolated staging; verify TLS, proxy/header behavior, real client access from another machine, database persistence/restart, and the full issue → email → validate → seat limit → deactivate → revoke → reject flow.
+- **Staging deployment and end-to-end acceptance:** no separate staging host or GitHub environment is configured. Provide isolated staging with PostgreSQL and adequate disk; the known production host is unsuitable as-is (MariaDB already runs there, PostgreSQL is absent, only 1.3 GB is free). Then verify TLS, proxy/header behavior, real client access from another machine, database persistence/restart, and the full issue → email → validate → seat limit → deactivate → revoke → reject flow.
 - **Mail operations:** authorize the sender, verify SPF/DKIM/DMARC and inbox placement, exercise failure/retry, and decide how bounces/DSNs are monitored.
 - **Recovery:** choose and configure an off-host encrypted backup target, retention, and schedule; approve RPO/RTO; restore staging data using the host's real deployment tooling and verify readiness and lifecycle behavior.
 - **Security/host review:** confirm firewall exposure, service account/filesystem permissions, SELinux policy, PostgreSQL network isolation and runtime grants, secure cookies and forwarded headers, and effective source-IP rate limiting behind the real proxy. Exercise credential rotation and rollback.
 - **Monitoring/support/privacy owner decisions:** configure and trigger actionable database/API/email/abuse alerts; choose a monitored support contact; approve retention, deletion/export, privacy notice, and recovery targets.
-- **Data review:** inspect the four changed trial-policy rows in the protected Phase 0 export. The agreed no-import decision for sample licenses/orders/audit data remains; do not commit or attach the protected export.
+- **Data review:** completed. The four custom trial-policy rows are documented by changed field names only and excluded from RC1; the mode-`0600` export remains local and is not committed or attached. The sample licenses/orders/audit records are also excluded.
 - **Release evidence:** review the candidate commit, rerun hosted CI and full-history secret scanning on that commit, record its artifact digest, staging smoke results, rollback trigger/procedure, and explicit release approval.
 
 ## Candidate acceptance record
 
-- [ ] Reviewed source commit and passing hosted CI run recorded.
+- [ ] Independent source review and passing hosted CI run for the final candidate-bundle commit recorded.
 - [ ] Versioned production build generated from that commit; artifact digest recorded.
 - [ ] Exact artifact deployed to staging and full acceptance checklist passed.
 - [ ] Off-host encrypted backup and restore rehearsal passed; retention/RPO/RTO approved.
