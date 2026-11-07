@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-slate-50: #f5f6f6;
+  --color-slate-100: #e5e7e8;
+  --color-slate-200: #cfd2d4;
+  --color-slate-300: #b5b9bb;
+  --color-slate-400: #92989a;
+  --color-slate-500: #73797c;
+  --color-slate-600: #555b5e;
+  --color-slate-700: #3d4245;
+  --color-slate-800: #292d30;
+  --color-slate-900: #171a1c;
+  --color-slate-950: #0b0d0f;
+
+  --color-cyan-50: #e7faf6;
+  --color-cyan-100: #c8f2e9;
+  --color-cyan-200: #9ae7d8;
+  --color-cyan-300: #68d7c3;
+  --color-cyan-400: #46cbb5;
+  --color-cyan-500: #2db39f;
+  --color-cyan-600: #238f7d;
+  --color-cyan-700: #1c7063;
+  --color-cyan-800: #19594f;
+  --color-cyan-900: #174941;
+  --color-cyan-950: #0a2b26;
+
+  --color-sky-50: #e7faf6;
+  --color-sky-100: #c8f2e9;
+  --color-sky-200: #9ae7d8;
+  --color-sky-300: #68d7c3;
+  --color-sky-400: #46cbb5;
+  --color-sky-500: #2db39f;
+  --color-sky-600: #238f7d;
+  --color-sky-700: #1c7063;
+  --color-sky-800: #19594f;
+  --color-sky-900: #174941;
+  --color-sky-950: #0a2b26;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
+    background-color: #0b0d0f;
+    color: #e2e8f0;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom charcoal and teal scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0d0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #353a3d;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2db39f;
+}
+
+.sidebar-scrollbar {
+  scrollbar-color: #353a3d #0a0c0e;
+  scrollbar-width: thin;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #0a0c0e;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: #353a3d;
+  border: 1px solid #0a0c0e;
+  border-radius: 9999px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #46cbb5;
+}

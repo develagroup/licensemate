@@ -1,0 +1,6 @@
+{
+  "name": "LicensePulse - Software License & Activation Manager",
+  "description": "Real-time software license manager with cloud API validation, device seat binding, webhook engine for Stripe/Lemon Squeezy/Shopify, RSA offline certificates, audit logs, and automated renewal alerts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
