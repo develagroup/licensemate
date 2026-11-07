@@ -2,7 +2,7 @@
 
 **Candidate status:** Prepared for review; **not approved for production**  
 **Release date:** Not set  
-**Candidate source revision:** Use the current head of [PR #1](https://github.com/develagroup/licensemate/pull/1) only when its hosted checks pass. CI builds and uploads the versioned source-plus-assets archive with a portable SHA-256 checksum; use the artifact attached to that exact reviewed commit, not an earlier run.
+**Candidate source revision:** Use the current head of [PR #1](https://github.com/develagroup/licensemate/pull/1) only after its hosted checks pass and owner review is complete. CI builds and uploads the versioned source-plus-assets archive with a portable SHA-256 checksum; use the artifact attached to that exact reviewed commit, not an earlier run.
 
 ## Candidate scope
 

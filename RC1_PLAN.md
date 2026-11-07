@@ -1,6 +1,6 @@
 # LicensePulse RC1 phase plan
 
-**Status:** PostgreSQL selected for RC1. Phases 1–4 local implementation and disposable-service smoke checks pass. Phase 5 local security, lifecycle, build, and backup/restore checks pass. Candidate workflow run [42415824229](https://github.com/develagroup/licensemate/actions/runs/42415824229) passed on commit `a1bf9ad65e7677a8720c34921791d4b6126d4f02`, including artifact upload and full-history secret scanning; the downloaded archive checksum verified. [PR #1](https://github.com/develagroup/licensemate/pull/1) holds the reviewable candidate and its checks rerun on the latest head. RC1 is **not ready for release**: independent review, staging acceptance, owner privacy/support decisions, and off-host recovery remain open. No production changes have been made.
+**Status:** PostgreSQL selected for RC1. Phases 1–4 local implementation and disposable-service smoke checks pass. Phase 5 local security, lifecycle, build, and backup/restore checks pass. Latest candidate commit `51666ff519c5bfdb4e949da93532d6cbc4f29788` passed [hosted CI run 42416054198](https://github.com/develagroup/licensemate/actions/runs/42416054198), including artifact upload and full-history secret scanning. The downloaded archive checksum verified. [PR #1](https://github.com/develagroup/licensemate/pull/1) is ready for owner review. RC1 is **not ready for release**: independent review, staging acceptance, owner privacy/support decisions, and off-host recovery remain open. No production changes have been made.
 **Target:** A small production release that can issue, monitor, validate, and revoke real online licenses safely.  
 **Current baseline:** Admin OTP login and hosted UI work. The local server uses PostgreSQL via `pg`; MySQL/MariaDB is no longer an application dependency. No production database or service has been changed. See [LICENSE_LIFECYCLE_AUDIT.md](LICENSE_LIFECYCLE_AUDIT.md) and [DATABASE_OPERATIONS.md](DATABASE_OPERATIONS.md).
 
@@ -227,14 +227,14 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 - Added CI checks for frozen Bun dependencies, the Bun advisory audit, TypeScript, server security smoke tests, production build, and Gitleaks source/history scanning.
 - Removed out-of-scope customer, billing, and offline demo destinations from the legacy Navbar. Audit history now labels IP/geolocation as not collected and no longer presents fabricated zero-millisecond request latency. Dashboard validation charts use real rolling 24-hour server aggregates.
 - Rechecked locally on 2026-11-07: `npm run lint`, production build, and all seven server security/session integration tests pass against a disposable PostgreSQL 17 instance and local fake SMTP sink. Integration coverage includes expiry discovery and rejection, renewal, and validation after renewal.
-- A full source-tree Gitleaks scan returned zero findings after replacing plausible-looking demo license keys and the empty encryption-key example. Hosted full-history scan now passes for the baseline and RC1 candidate commits; the current artifact-packaging follow-up also runs the history scan in CI.
+- A full source-tree Gitleaks scan returned zero findings after replacing plausible-looking demo license keys and the empty encryption-key example. Hosted full-history scans passed on the baseline and latest RC1 candidate commits.
 - Bun 1.4.4 `bun install --frozen-lockfile`, `bun audit` (317 packages, no vulnerabilities), `bun run lint`, and `bun run build` passed in an isolated Linux container. API tests passed locally under Node; candidate GitHub run 42415096677 passed the hosted security/API suite.
 - A local encrypted PostgreSQL custom-format backup/restore rehearsal passed. This is not an off-host backup or a staging restore.
 
 ### Remaining Phase 5 work
 
 - [x] Add local server coverage for origin policy, OTP throttling, security headers, admin authorization, client API routing, and database-backed session creation/revocation using disposable PostgreSQL and fake SMTP.
-- [x] Add CI dependency and secret scanning, typecheck, security smoke, and production build. Candidate GitHub run 42415096677 passed; a follow-up adds artifact packaging and reruns the complete workflow.
+- [x] Add CI dependency and secret scanning, typecheck, security smoke, production build, and versioned artifact packaging. GitHub runs 42415096677 and 42416054198 passed; the latter generated and uploaded the RC1 bundle.
 - [x] Hide remaining customer, billing, webhook, and offline demo destinations from both current navigation systems; preserve existing browser data for owner review.
 - [ ] Approve retention and recovery targets, choose a customer support contact, and define deletion/export handling. Proposed targets and data inventory are in [RC1_OPERATIONS_RUNBOOK.md](RC1_OPERATIONS_RUNBOOK.md).
 - [ ] Configure staging/production alerts and verify credential rotation, log redaction, and off-host backup/restore policy.
@@ -274,12 +274,12 @@ Production PostgreSQL provisioning and data writes remain gated on a supported P
 
 ### Candidate preparation status (2026-11-07)
 
-- GitHub Actions run [42415824229](https://github.com/develagroup/licensemate/actions/runs/42415824229) passed on candidate commit `a1bf9ad65e7677a8720c34921791d4b6126d4f02`, including dependency audit, TypeScript, PostgreSQL-backed API/session tests, production build, versioned artifact packaging/upload, and Gitleaks source/history scan.
-- Candidate Bun 1.4.4 frozen install, `bun audit` (317 packages, zero vulnerabilities), TypeScript check, production build, and Gitleaks v8.30.1 passed locally; the current candidate revision passed the hosted workflow. CI reruns on each pull request head.
+- GitHub Actions run [42416054198](https://github.com/develagroup/licensemate/actions/runs/42416054198) passed on candidate commit `51666ff519c5bfdb4e949da93532d6cbc4f29788`, including dependency audit, TypeScript, PostgreSQL-backed API/session tests, production build, versioned artifact packaging/upload, and Gitleaks source/history scan.
+- Candidate Bun 1.4.4 frozen install, `bun audit` (317 packages, zero vulnerabilities), TypeScript check, production build, and Gitleaks v8.30.1 passed locally and in hosted CI on the current PR head.
 - The package is versioned as `1.0.0-rc.1`; this identifies a candidate only. It is not a production release or proof of staging acceptance.
 - [RC1_RELEASE_NOTES.md](RC1_RELEASE_NOTES.md) captures scope, operator-visible capabilities, and limitations for candidate review.
 - The CI workflow assembles a versioned source-plus-built-assets archive and checksum for a 30-day CI artifact. Downloaded archive SHA-256 `c1535f17722583bfb908e3090f4f65f86d9cc5fbfcf167db0658eb4595ce8304` verified successfully; contents include source and `dist`, and exclude `.env`, `node_modules`, and `.git`. This packages but does not deploy the bundle.
-- Draft review request [PR #1](https://github.com/develagroup/licensemate/pull/1) contains the candidate diff. Independent owner review remains outstanding.
+- Ready-for-review [PR #1](https://github.com/develagroup/licensemate/pull/1) contains the candidate diff. Independent owner review remains outstanding.
 - No staging deployment or production action has been performed. Review and passing CI on the latest artifact-packaging commit are required before staging promotion.
 - Phase 6 and the overall launch remain **blocked on external/owner gates**, enumerated in [RC1_RELEASE_NOTES.md](RC1_RELEASE_NOTES.md).
 
